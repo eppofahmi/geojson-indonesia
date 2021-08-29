@@ -1,10 +1,10 @@
 ## Geojson-indonesia
 This is a repo to store and sometimes update geojson file that contains any state and cities in Indonesia
 
-# How to use?
+## How to use?
 1. You have to download the geojson files 
 2. Plot as usual 
-3. I also put sample value for ploting example
+3. I also put sample value for plotting example
 
 ## Province
 ```
@@ -49,7 +49,6 @@ leaflet(cities) %>%
 1. Province - contains of 34 state multipolygon
 2. Cities - contains of 514 cities/regency multipolygon
 
-# Additional Tools
+## Additional Tools
 
-I use [geojson.io](https://geojson.io) to create some additional geometry 
-
+I use [geojson.io](https://geojson.io) to create some additional geometry and this very helpful [website](https://www.indonesia-geospasial.com/p/sitemap.html) that post some `shapefile` file.
