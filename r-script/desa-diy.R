@@ -27,10 +27,10 @@ dusun_trimurti$dusun = toupper(dusun_trimurti$dusun)
 dusun_trimurti$sample_value = sample(10:100, nrow(dusun_trimurti))
 glimpse(dusun_trimurti)
 
-st_write(dusun_trimurti, "geojson-test/bantul/trimurti-dusun.geojson")
+st_write(dusun_trimurti, "geojson-test/bantul/trimurti-srandakan-bantul.geojson")
 
 # tes hasil 
-dusun = readOGR("geojson-test/bantul/trimurti-dusun.geojson")
+dusun = readOGR("geojson-test/bantul/trimurti-srandakan-bantul.geojson")
 
 ## Leaflet
 pal = colorNumeric("viridis", dusun$sample_value)
