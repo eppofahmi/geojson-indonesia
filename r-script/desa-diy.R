@@ -13,7 +13,7 @@ colnames(desa_diy) = tolower(colnames(desa_diy))
 desa_diy$desa = as.character(desa_diy$desa)
 glimpse(desa_diy)
 
-st_write(desa_diy, "desa/desa_diy.geojson")
+# st_write(desa_diy, "desa/desa_diy.geojson")
 
 # Kalurahan trimurti - srandakan - bantul
 trimurti = desa_diy %>% 
@@ -43,3 +43,18 @@ leaflet(dusun) %>%
   addLegend("topright", pal = pal, values = ~sample_value,
             title = "Populasi (Ribu Jiwa)", 
             opacity = 0.5, na.label = "")
+
+# sentolo-kalurahan.kedata.online
+sentolo = desa_diy %>% 
+  filter(desa == toupper("sentolo"))
+st_write(sentolo, "geojson-test/kulonprogo/sentolo.geojson")
+
+# gari-kalurahan.kedata.online
+gari = desa_diy %>% 
+  filter(desa == toupper("gari"))
+st_write(gari, "geojson-test/gk/gari.geojson")
+
+# tamanmartani-kalurahan.kedata.online
+tamanmartani = desa_diy %>% 
+  filter(desa == toupper("tamanmartani"))
+st_write(tamanmartani, "geojson-test/sleman/tamanmartani.geojson")
