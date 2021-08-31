@@ -5,6 +5,7 @@ library(leaflet)
 library(rgdal)
 library(rmapshaper)
 
+# per desa
 desa_diy = st_read("rawdata/BATAS DESA DESEMBER 2019 DUKCAPIL DI YOGYAKARTA/BATAS_DESA_DESEMBER_2019_DUKCAPIL_DI_YOGYAKARTA.shp")
 desa_diy = desa_diy %>% 
   select(OBJECT_ID, KODE_DESA, DESA, PROVINSI, KAB_KOTA, KECAMATAN, DESA_KELUR, JUMLAH_PEN, geometry)
@@ -22,3 +23,5 @@ for (i in seq_along(1:nrow(desa_diy))) {
                         tolower(peta$desa), 
                         ".geojson"))
 }
+
+# per dusun/dukuh
