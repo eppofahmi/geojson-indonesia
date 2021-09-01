@@ -8,20 +8,19 @@ library(spatstat)  # Used for the dirichlet tessellation function
 library(maptools)  # Used for conversion from SPDF to ppp
 library(raster)    # Used to clip out thiessen polygons
 
-jumlah_dusun = 15
+jumlah_dusun = 22
 
 # data desa 
-dukuh0 = readOGR("desa/diy/bantul/bantul-bambanglipuro-mulyodadi.geojson")
+dukuh0 = readOGR("desa/diy/bantul/bantul-pajangan-triwidadi.geojson")
 
 # random point 
-
 tes = spsample(dukuh0, n=jumlah_dusun, "random")
 coords = tes@coords
 x = coords[,1]
 y = coords[,2]
 coords = tibble(x, y)
 
-rp = tibble(value = sample(100:119, jumlah_dusun))
+rp = tibble(value = sample(100:1000, jumlah_dusun))
 data <- rp[ , 1]
 crs <- CRS(as.character(NA))
 spdf <- SpatialPointsDataFrame(coords = coords,
@@ -49,6 +48,12 @@ th.spdf <- SpatialPolygonsDataFrame(th, th.z)
 # Finally, we'll clip the tessellated  surface to the Texas boundaries
 th.clp <- raster::intersect(dukuh0,th.spdf)
 class(th.clp)
+
+# Map the data
+tm_shape(th.clp) + 
+  tm_polygons(col="value", palette="RdBu", auto.palette.mapping=FALSE,
+              title="Predicted precipitation \n(in inches)") +
+  tm_legend(legend.outside=TRUE)
 
 th.clp1 = st_as_sf(th.clp)
 st_write(th.clp1, "tes-oto-dukuh.geojson")
