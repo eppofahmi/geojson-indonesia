@@ -7,7 +7,7 @@ library(rmapshaper)
 
 # Province ----
 ## Geojson ----
-province = readOGR("province/all_maps_state_indo.geojson")
+province = readOGR("provinsi/all_maps_state_indo.geojson")
 
 ## Leaflet
 pal = colorNumeric("viridis", province$sample_value)
@@ -24,7 +24,7 @@ leaflet(province) %>%
 
 # Cities ----
 ## Geojson ----
-cities = readOGR("cities/all_maps_city_indo.geojson")
+cities = readOGR("kota/all_maps_city_indo.geojson")
 
 ## Leaflet
 pal = colorNumeric("viridis", cities$sample_value)

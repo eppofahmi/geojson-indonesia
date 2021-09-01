@@ -16,7 +16,7 @@ glimpse(desa_diy)
 
 for (i in seq_along(1:nrow(desa_diy))) {
   print(i)
-  peta = desa_diy[i, ]
+  peta = desa_diy[i, ] %>% 
   st_write(peta, paste0("desa/diy/", 
                         tolower(peta$kab_kota), "-",
                         tolower(peta$kecamatan), "-", 
