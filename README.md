@@ -11,7 +11,7 @@ This is a repo to store and sometimes update geojson file that contains any stat
 library(sf)
 library(leaflet)
 
-province = readOGR("province/all_maps_state_indo.geojson")
+province = readOGR("provinsi/all_maps_state_indo.geojson")
 
 ## Leaflet
 pal = colorNumeric("viridis", province$sample_value)
@@ -31,7 +31,7 @@ leaflet(province) %>%
 ```
 library(sf)
 library(leaflet)
-cities = readOGR("cities/all_maps_city_indo.geojson")
+cities = readOGR("kota/all_maps_city_indo.geojson")
 pal = colorNumeric("viridis", cities$sample_value)
 
 leaflet(cities) %>%
@@ -52,3 +52,7 @@ leaflet(cities) %>%
 ## Additional Tools
 
 I use [geojson.io](https://geojson.io) to create some additional geometry and this very helpful [website](https://www.indonesia-geospasial.com/p/sitemap.html) that post some `shapefile` file.
+
+## Splitter Pedukuhan
+
+I used `Thiessen polygon` to divide the area of the village geojson into a number of hamlet areas. The pedukuhan coordinates are temporarily generated randomly from the village map polygon.
