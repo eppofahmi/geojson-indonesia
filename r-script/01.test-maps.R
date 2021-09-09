@@ -38,7 +38,7 @@ leaflet(cities) %>%
 
 
 # Dapil -----
-dapil = readOGR("dapil/all_maps_dapil.geojson")
+dapil = readOGR("dapil/dapil_2019.geojson")
 
 ## Leaflet
 pal = colorNumeric("viridis", dapil$sample_value)
