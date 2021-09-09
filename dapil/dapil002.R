@@ -6,6 +6,7 @@ library(rgdal)
 library(rmapshaper)
 library(readxl)
 
+dapil = jsonlite::read_json("dapil/dapil_fix.json", simplifyVector = TRUE)
 provinsi = readOGR("dapil/dapil_prov.geojson")
 kabkot = readOGR("dapil/dapil_kabkot.geojson")
 
