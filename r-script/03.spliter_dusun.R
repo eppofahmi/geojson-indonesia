@@ -1,73 +1,126 @@
+library(spatstat)  # Used for the dirichlet tessellation function
+library(maptools)  # Used for conversion from SPDF to ppp
+library(raster)    # Used to clip out thiessen polygons
 library(tidyverse)
 library(readxl)
 library(rgdal)
 library(tmap)
 library(sf)
 library(sp)
-library(spatstat)  # Used for the dirichlet tessellation function
-library(maptools)  # Used for conversion from SPDF to ppp
-library(raster)    # Used to clip out thiessen polygons
+library(janitor)
 
-jumlah_dusun = 10
+# daftar desa di peta ----
+daftar_desa <- read_csv("desa/daftar_desa.csv", trim_ws = FALSE)
+daftar_desa = clean_names(daftar_desa) 
 
-# data desa 
-dukuh0 = readOGR("desa/diy/bantul/bantul-bambanglipuro-sidomulyo.geojson")
+daftar_desa = daftar_desa %>% 
+  rename(kecamatan = kec)
+glimpse(daftar_desa)
 
-# random point 
-set.seed(12345)
-tes = spsample(dukuh0, n = jumlah_dusun, type = "random")
-# tes = spsample(dukuh0, n = jumlah_dusun, type = "stratified", nsig = "pretty", pretty = TRUE)
-coords = tes@coords
-x = coords[,1]
-y = coords[,2]
-coords = tibble(x, y)
-coords = coords %>%
-  sample_n(jumlah_dusun)
-# View(coords)
+daftar_desa$desa = gsub("ngoro", "ngoro-oro", daftar_desa$desa)
+daftar_desa$desa = gsub("catuharjo", "caturharjo", daftar_desa$desa)
+daftar_desa$desa = gsub("sumberahayu", "sumberrahayu", daftar_desa$desa)
+daftar_desa$desa = gsub("bangujiwo", "bangunjiwo", daftar_desa$desa)
 
-rp = tibble(value = sample(100:1000, jumlah_dusun))
-data <- rp[ , 1]
-crs <- CRS(as.character(NA))
-spdf <- SpatialPointsDataFrame(coords = coords,
-                               data = data, 
-                               proj4string = crs)
+# daftar dusun bantul ----
+daftar_dusun = read_csv("desa/dusun_clean2.csv")
+daftar_dusun = clean_names(daftar_dusun)
+daftar_dusun = daftar_dusun %>% 
+  select(pedukuhan = padukuhan, desa = kalurahan_kelurahan, kecamatan = kapanewon, kabkot = kabupaten)
 
-spdf_x = st_as_sf(spdf)
-spdf@bbox <- dukuh0@bbox
+daftar_dusun$desa = tolower(daftar_dusun$desa)
+daftar_dusun$desa = gsub("[[:punct:]]", "", daftar_dusun$desa)
+daftar_dusun$desa = gsub("kelurahan ", "", daftar_dusun$desa)
+daftar_dusun$desa = gsub("ngorooro", "ngoro-oro", daftar_dusun$desa)
+glimpse(daftar_dusun)
 
-tm_shape(dukuh0) + 
-  tm_polygons() +
-  tm_shape(spdf) +
-  tm_dots(col="value", palette = "RdBu", auto.palette.mapping = FALSE,
-          title="Sampled precipitation \n(in inches)", size=0.7) +
-  tm_text("value", just="left", xmod=.5, size = 0.7) +
-  tm_legend(legend.outside=TRUE)
+daftar_dusun$kecamatan = tolower(daftar_dusun$kecamatan)
+daftar_dusun$kabkot = tolower(daftar_dusun$kabkot)
 
-# Create a tessellated surface
-th  <-  as(dirichlet(as.ppp(spdf)), "SpatialPolygons")
+daftar_dusun1 = daftar_dusun %>% 
+  left_join(daftar_desa)
+glimpse(daftar_dusun1)
 
-# The dirichlet function does not carry over projection information
-# requiring that this information be added manually
-proj4string(th) <- proj4string(spdf)
+# poligon desa ----
+df = daftar_dusun1 %>% 
+  filter(!is.na(namafile)) %>% 
+  count(namafile, kabkot, kecamatan, desa)
 
-# The tessellated surface does not store attribute information
-# from the point data layer. We'll use the over() function (from the sp
-# package) to join the point attributes to the tesselated surface via
-# a spatial join. The over() function creates a dataframe that will need to
-# be added to the `th` object thus creating a SpatialPolygonsDataFrame object
-th.z <- over(th, spdf, fn=mean)
-th.spdf <- SpatialPolygonsDataFrame(th, th.z)
-
-# Finally, we'll clip the tessellated  surface to the Texas boundaries
-th.clp <- raster::intersect(dukuh0,th.spdf)
-class(th.clp)
-
-# Map the data
-tm_shape(th.clp) + 
-  tm_polygons(col="value", palette="RdBu", auto.palette.mapping=FALSE,
-              title="Predicted precipitation \n(in inches)") +
-  tm_legend(legend.outside=TRUE)
-
-# th.clp1 = st_as_sf(th.clp)
-# st_write(th.clp1, "tes-oto-dukuh.geojson")
-
+# generate random poligon ----
+for (i in seq_along(1:nrow(df))) {
+  nama_desa = df$desa[i]
+  nama_file = df$namafile[i]
+  jumlah_dusun = df$n[i]
+  kabkot = df$kabkot[i]
+  kec = df$kecamatan[i]
+  
+  if(kabkot == "bantul") {
+    folder = "desa/diy/bantul/"
+  } else if(kabkot == "gunungkidul") {
+    folder = "desa/diy/gk/"
+  } else if(kabkot == "kulon progo") {
+    folder = "desa/diy/kp/"
+  } else if(kabkot == "sleman"){
+    folder = "desa/diy/sleman/"
+  } else {
+    folder = "desa/diy/kota/"
+  }
+  
+  print(paste0("data ke-", i, " ", 'desa-', df$desa[i]))
+  # data desa 
+  dukuh0 = readOGR(paste0(folder, nama_file))
+  
+  # random point 
+  tes = spsample(dukuh0, n=jumlah_dusun, "random")
+  coords = tes@coords
+  x = coords[,1]
+  y = coords[,2]
+  coords = tibble(x, y)
+  
+  rp = tibble(value = sample(100:150, jumlah_dusun))
+  data <- rp[ , 1]
+  crs <- CRS(as.character(NA))
+  spdf <- SpatialPointsDataFrame(coords = coords,
+                                 data = data, 
+                                 proj4string = crs)
+  
+  spdf_x = st_as_sf(spdf)
+  spdf@bbox <- dukuh0@bbox
+  
+  # Create a tessellated surface
+  th  <-  as(dirichlet(as.ppp(spdf)), "SpatialPolygons")
+  proj4string(th) <- proj4string(spdf)
+  th.z <- over(th, spdf, fn=mean)
+  th.spdf <- SpatialPolygonsDataFrame(th, th.z)
+  
+  # nama padukuhan
+  df2 = daftar_dusun1 %>% 
+    filter(kabkot == kabkot) %>% 
+    filter(kecamatan == kec) %>% 
+    filter(desa == nama_desa) %>% 
+    select(pedukuhan)
+  
+  # Finally, we'll clip the tessellated  surface to the Texas boundaries
+  th.clp <- raster::intersect(dukuh0,th.spdf)
+  df3 = th.clp@data
+  df3$pedukuhan = df2$pedukuhan
+  th.clp@data = df3
+  
+  th.clp1 = st_as_sf(th.clp)
+  if(kabkot == "bantul") {
+    st_write(th.clp1, paste0("randompolygon_dusun/diy/bantul/", 
+                             kabkot, "-", kec, "-", nama_desa, "-", ".geojson"))
+  } else if(kabkot == "gunungkidul") {
+    st_write(th.clp1, paste0("randompolygon_dusun/diy/gk/", 
+                             kabkot, "-", kec, "-", nama_desa, "-", ".geojson"))
+  } else if(kabkot == "kulon progo") {
+    st_write(th.clp1, paste0("randompolygon_dusun/diy/kp/", 
+                             kabkot, "-", kec, "-", nama_desa, "-",".geojson"))
+  } else if(kabkot == "sleman"){
+    st_write(th.clp1, paste0("randompolygon_dusun/diy/sleman/",
+                             kabkot, "-", kec, "-", nama_desa, "-",".geojson"))
+  } else {
+    st_write(th.clp1, paste0("randompolygon_dusun/diy/kota/",
+                             kabkot, "-", kec, "-", nama_desa, "-",".geojson"))
+  }
+}
